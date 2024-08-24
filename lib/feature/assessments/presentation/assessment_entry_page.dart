@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fitflow/constant/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -35,87 +36,102 @@ class _AssessmentEntryPageState extends State<AssessmentEntryPage> {
                   right: 25,
                   top: 48,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Column(
+                child: StreamBuilder(
+                  stream: FirebaseFirestore.instance.collection('assessment').snapshots(),
+                  builder: (context, snapshots) {
+                    if(snapshots.connectionState == ConnectionState.waiting){
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (snapshots.hasError) {
+                      print(snapshots.error);
+                      return Center(child: Text('Error: ${snapshots.error}'));
+                    }
+
+                    final loadAssessmentData = snapshots.data!.docs;
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const SizedBox(
-                          height: 30,
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            Get.back();
-                          },
-                          child: SvgPicture.asset(
-                            IconConst.backArrowIcon,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 33,
-                        ),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.39,
-                          child: Text(
-                            "Health Risk Assessment",
-                            style: TextStyle(
-                              fontFamily: GoogleFonts.poppins().fontFamily,
-                              color: ColorConst.colorNavyBlueShade,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 24,
-                              height: 1.3
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(
+                              height: 30,
                             ),
-                            maxLines: 2,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 11,
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.rectangle,
-                            borderRadius: BorderRadius.circular(25.0),
-                            color: ColorConst.colorWhite,
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8.0,
-                            vertical: 2.0,
-                          ),
-                          child: Row(
-                            children: [
-                              SvgPicture.asset(
-                                IconConst.timerIcon,
-                                width: 11,
+                            GestureDetector(
+                              onTap: () {
+                                Get.back();
+                              },
+                              child: SvgPicture.asset(
+                                IconConst.backArrowIcon,
                               ),
-                              const SizedBox(
-                                width: 5,
-                              ),
-                              Text(
-                                "4 min",
+                            ),
+                            const SizedBox(
+                              height: 33,
+                            ),
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.39,
+                              child: Text(
+                                loadAssessmentData[1].data()['title'],
                                 style: TextStyle(
-                                  fontFamily: GoogleFonts.poppins().fontFamily,
-                                  color: ColorConst.colorNavyBlueShade,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 11,
+                                    fontFamily: GoogleFonts.poppins().fontFamily,
+                                    color: ColorConst.colorNavyBlueShade,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 24,
+                                    height: 1.3
                                 ),
+                                maxLines: 2,
                               ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(
+                              height: 11,
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.rectangle,
+                                borderRadius: BorderRadius.circular(25.0),
+                                color: ColorConst.colorWhite,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0,
+                                vertical: 2.0,
+                              ),
+                              child: Row(
+                                children: [
+                                  SvgPicture.asset(
+                                    IconConst.timerIcon,
+                                    width: 11,
+                                  ),
+                                  const SizedBox(
+                                    width: 5,
+                                  ),
+                                  Text(
+                                    "4 min",
+                                    style: TextStyle(
+                                      fontFamily: GoogleFonts.poppins().fontFamily,
+                                      color: ColorConst.colorNavyBlueShade,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        Image.network(
+                          loadAssessmentData[1].data()['imageUrl'],
+                          fit: BoxFit.cover,
+                          width: 165,
+                          height: 225,
+                          alignment: Alignment.center,
                         ),
                       ],
-                    ),
-                    Image.asset(
-                      ImageConst.imageAssessment2,
-                      fit: BoxFit.cover,
-                      width: 165,
-                      height: 225,
-                      alignment: Alignment.center,
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ),
               Container(
